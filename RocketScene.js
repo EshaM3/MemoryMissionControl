@@ -2,6 +2,8 @@ var rocket;
 var chosenPlanet;
 var scoreText;
 var score = 0;
+var inGameSetQuestions = [];
+var inGameSetAnswers = [];
 
 class RocketScene extends Phaser.Scene {
   constructor() {
@@ -84,6 +86,14 @@ class RocketScene extends Phaser.Scene {
       }
     );
     this.load.spritesheet(
+      "RocketLand",
+      "pixeloramaAnims/rocket_iter1_landing.png",
+      {
+        frameWidth: 128,
+        frameHeight: 96,
+      }
+    );
+    this.load.spritesheet(
       "RocketFade",
       "pixeloramaAnims/rocket_iter1_disappear.png",
       {
@@ -142,6 +152,12 @@ class RocketScene extends Phaser.Scene {
       }
     );
 
+    //wrong answer animation
+    this.load.spritesheet("wrongAnswer", "pixeloramaAnims/wrongAnswer.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
+
     // // //images of the planets
     this.load.image(
       "planetAlmondSundae",
@@ -173,14 +189,19 @@ class RocketScene extends Phaser.Scene {
     let bg = this.add.image(0, 0, "background");
     bg.setScale(1.6);
 
+    inGameSetQuestions = questions;
+    inGameSetAnswers = answers;
+
     let nextButton = this.add
       .image(1360, 660, "nextArrow")
       .setInteractive()
       .on(
         "pointerdown",
         function () {
-          // RocketScenethi.start("RocketScene");
-          this.scene.restart();
+          // this.scene.restart();
+          inGameSetAnswers[0].value = "";
+          console.log(inGameSetQuestions);
+          console.log(inGameSetAnswers);
         },
         this
       )
@@ -264,10 +285,15 @@ class RocketScene extends Phaser.Scene {
     });
 
     this.anims.create({
+      key: "landing",
+      frames: this.anims.generateFrameNumbers("RocketLand"),
+      frameRate: 25,
+      repeat: 0,
+    });
+
+    this.anims.create({
       key: "disappear",
-      frames: this.anims.generateFrameNumbers("RocketFade", {
-        frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      }),
+      frames: this.anims.generateFrameNumbers("RocketFade"),
       frameRate: 10,
       repeat: 0,
     });
@@ -322,6 +348,13 @@ class RocketScene extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers("planetRainypop_fade", {
         frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       }),
+      frameRate: 10,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: "wrong_answer",
+      frames: this.anims.generateFrameNumbers("wrongAnswer"),
       frameRate: 10,
       repeat: 0,
     });
@@ -404,11 +437,25 @@ class RocketScene extends Phaser.Scene {
         chosenPlanet = gameObject;
         if (gameObject.x >= rocket.x) {
           rocket.play("turn90R");
-          rocket.chain(["flyR", "turn180R", "flyDown", "disappear", "idle"]);
+          rocket.chain([
+            "flyR",
+            "turn180R",
+            "flyDown",
+            "landing",
+            "disappear",
+            "idle",
+          ]);
         }
         if (gameObject.x < rocket.x) {
           rocket.play("turn90L");
-          rocket.chain(["flyL", "turn180L", "flyDown", "disappear", "idle"]);
+          rocket.chain([
+            "flyL",
+            "turn180L",
+            "flyDown",
+            "landing",
+            "disappear",
+            "idle",
+          ]);
         }
       }
 
@@ -447,23 +494,25 @@ class RocketScene extends Phaser.Scene {
         rocket.stop("flyDown");
         score++;
         scoreText.text = `Score: ${score}`;
-        let planetName = chosenPlanet.texture.key;
-        if (planetName === "planetAlmondSundae") {
-          chosenPlanet.play("planet_disappearAS");
-        } else if (planetName === "planetCitrusPeel") {
-          chosenPlanet.play("planet_disappearCP");
-        } else if (planetName === "planetFuschiaLuster") {
-          chosenPlanet.play("planet_disappearFL");
-        } else if (planetName === "planetMagenta") {
-          chosenPlanet.play("planet_disappearM");
-        } else if (planetName === "planetOrangeCoil") {
-          chosenPlanet.play("planet_disappearOC");
-        } else if (planetName === "planetRainypop") {
-          chosenPlanet.play("planet_disappearRP");
-        }
         chosenPlanet.removeInteractive();
       } else {
         rocket.y += 8;
+      }
+    }
+    if (rocket.anims.getName() === "disappear") {
+      let planetName = chosenPlanet.texture.key;
+      if (planetName === "planetAlmondSundae") {
+        chosenPlanet.play("planet_disappearAS");
+      } else if (planetName === "planetCitrusPeel") {
+        chosenPlanet.play("planet_disappearCP");
+      } else if (planetName === "planetFuschiaLuster") {
+        chosenPlanet.play("planet_disappearFL");
+      } else if (planetName === "planetMagenta") {
+        chosenPlanet.play("planet_disappearM");
+      } else if (planetName === "planetOrangeCoil") {
+        chosenPlanet.play("planet_disappearOC");
+      } else if (planetName === "planetRainypop") {
+        chosenPlanet.play("planet_disappearRP");
       }
     }
     if (rocket.anims.getName() === "idle") {

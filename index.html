@@ -4,43 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
+
     <script src="https://cdn.jsdelivr.net/npm/phaser@v3.80.1/dist/phaser.min.js"></script>
     <script src="TitleScene.js"></script>
     <script src="InputScene.js"></script>
     <script src="RocketScene.js"></script>
     <script src="GameOverScene.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <!-- <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script> -->
     <title>Memory Mission Control</title>
   </head>
   <body>
-    <div
-      id="game"
-      style="height: 700px; width: 1400px; margin: 20px; position: relative"
-    ></div>
+    <div id="gameDiv"></div>
+    <div class="InputForm" id="inputForm">
+      <h1>Input Form</h1>
+      <div class="explanation">
+        <p>
+          This is a quiz game to help the user practice putting questions and
+          answers together for any purpose, but particularly for exams. The
+          player must guide each question's rocket to the correct answer's
+          planet. Please fill this form out with all of your questions and
+          answers.
+        </p>
+      </div>
+      <div class="addButtons">
+        <label for="numQAs">I want this many question/answer pairings: </label>
+        <input
+          id="numQAs"
+          name="numQAs"
+          type="number"
+          min="1"
+          max="100"
+          value="1"
+        />
+      </div>
+      <div id="inputFormSet" class="inputFormSet">
+        <div class="QNA">
+          <input
+            type="text"
+            class="questionInput"
+            name="questionInput"
+            placeholder="Enter your quiz question here"
+            style="font-size: 25px"
+          />
+          <input
+            type="text"
+            class="answerInput"
+            name="answerInput"
+            placeholder="Enter the answer to the quiz question here"
+            style="font-size: 25px"
+          />
+        </div>
+      </div>
+      <div class="buttonDiv">
+        <button id="submit">Submit</button>
+      </div>
+    </div>
     <script>
+      var questions;
+      var answers;
+
+      jQuery(function ($) {
+        let clone = $(".QNA").first().clone(true);
+        inputFormSet.textContent = "";
+        $("#inputFormSet").append(clone);
+
+        $("#numQAs").on("input", function () {
+          // alert("changed");
+          let clone = $(".QNA").first().clone(true);
+          inputFormSet.textContent = "";
+          for (i = 0; i < $("#numQAs").val(); i++) {
+            $("#inputFormSet").append(clone);
+            clone = $(".QNA").first().clone(true);
+          }
+        });
+      });
+
       var config = {
         type: Phaser.AUTO,
         width: 1400,
         height: 700,
-        parent: "game",
-        dom: {
-          createContainer: true,
-        },
-        scene: [InputScene, RocketScene],
-        // physics: {
-        //   default: "arcade",
-        //   arcade: {
-        //     gravity: { y: 200 },
-        //   },
-        // },
+        scene: [TitleScene, RocketScene, GameOverScene],
         pixelArt: true,
+        parent: "gameDiv",
         scale: {
           autoCenter: Phaser.Scale.CENTER_BOTH,
         },
-        // background: url("images/spaceBG.png"),
       };
 
       var game = new Phaser.Game(config);
+
+      document.getElementById("submit").onclick = function () {
+        questions = document.querySelectorAll(".questionInput");
+        answers = document.querySelectorAll(".answerInput");
+        RocketScene.inGameSetQuestions = questions;
+        RocketScene.inGameSetAnswers = questions;
+        inputForm.style.display = "none";
+        game.scene.start("RocketScene");
+        gameDiv.style.display = "block";
+      };
     </script>
   </body>
 </html>
